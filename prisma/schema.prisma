@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id    String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  email      String   @unique
+  password   String
+  googleId   String?  
+  avatar     String?
+  phone      String?
+    favoriteFood String[]
+    role          Role     @default(USER) 
+  orders     Order[]  @relation("UserOrders")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model MenuFood {
+  food_id     String   @id @default(auto()) @map("_id") @db.ObjectId
+  image       String?
+  name        String
+  description String
+  status      Boolean  @default(true)
+  price       Float
+  orders      OrderDetail[] @relation("MenuFoodOrders")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Order {
+  order_id    String          @id @default(auto()) @map("_id") @db.ObjectId
+  user_id     String          @db.ObjectId
+  user        User            @relation("UserOrders", fields: [user_id], references: [user_id])
+  menuItems   OrderDetail[] @relation("OrderDetails")
+  status      OrderStatus     @default(PENDING) //chua thanh toan
+  totalPrice  Float
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+model OrderDetail {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  order_id   String   @db.ObjectId
+  food_id    String   @db.ObjectId
+  order      Order    @relation("OrderDetails", fields: [order_id], references: [order_id])
+  menuFood   MenuFood @relation("MenuFoodOrders", fields: [food_id], references: [food_id])
+  quantity   Int      @default(1) // Ví dụ thêm số lượng món
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum OrderStatus {
+  PENDING    // Chưa thanh toán
+  PAID       // Đã thanh toán
+  FAILED     // Thanh toán thất bại
+  CANCELLED  // Đã hủy
+}
