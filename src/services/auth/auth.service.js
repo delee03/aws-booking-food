@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken";
 import cookie from "cookie";
 import prisma from "../../common/prisma/prisma.init.js";
 import setUpCookies from "../token/createToken.cookies.js";
+import { sendMail } from "../../common/mails/sendMail.nodemailer.js";
 
 export const authService = {
     register: async (req) => {
@@ -56,9 +57,24 @@ export const authService = {
         });
 
         // gửi mail thông báo đăng kí thành công
-        // sendMail();
-        // sendMail(email);
-        return newUser;
+
+        const emailSending = await sendMail(
+            email,
+            "Welcome to Our Service",
+            "Xác nhận đăng ký thành công",
+            fullName
+        );
+        if (emailSending) {
+            return {
+                newUser,
+                nofity: "Đăng ký tài khoản thành công",
+            };
+        } else {
+            return {
+                newUser,
+                nofity: "Tạo user thành công, nhưng gửi mail thất bại",
+            };
+        }
     },
 
     login: async (req) => {
