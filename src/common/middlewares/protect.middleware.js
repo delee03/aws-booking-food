@@ -13,7 +13,7 @@ async function protect(req, res, next) {
         const parsedCookies = cookie.parse(cookies);
 
         console.log(parsedCookies);
-        const token = parsedCookies.token;
+        const token = parsedCookies.cookiesToken;
         if (!token) {
             return res.status(401).json({
                 message: "Unauthorized",

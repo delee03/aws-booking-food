@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
 import prisma from "../../common/prisma/prisma.init.js";
+import setUpCookies from "../token/createToken.cookies.js";
 
 export const authService = {
     register: async (req) => {
@@ -60,7 +61,7 @@ export const authService = {
         return newUser;
     },
 
-    login: async () => {
+    login: async (req) => {
         const { email, password } = req.body;
 
         const userExist = await prisma.user.findFirst({
@@ -80,21 +81,22 @@ export const authService = {
             throw new BadRequestError("Password is invalid");
         }
         //tạo token
-        const token = jwt.sign(
-            { userId: userExist.id },
-            process.env.JWT_SECRET,
-            { expiresIn: "1h" }
-        );
+        // const token = jwt.sign(
+        //     { userId: userExist.id },
+        //     process.env.JWT_SECRET,
+        //     { expiresIn: "1h" }
+        // );
 
-        const cookieOptions = {
-            httpOnly: true,
-            maxAge: 15 * 24 * 60 * 60 * 1000,
-        };
+        // const cookieOptions = {
+        //     httpOnly: true,
+        //     maxAge: 15 * 24 * 60 * 60 * 1000,
+        // };
 
-        const setCookie = cookie.serialize("token", token, cookieOptions);
-        return setCookie;
+        // const setCookie = cookie.serialize("token", token, cookieOptions);
+
+        const cookies = setUpCookies.createToken_Cookies(userExist.user_id);
+        return cookies;
     },
-
     findAll: async function (req) {
         let { pageIndex, pageSize } = req.query;
         pageSize = pageSize ? +pageSize : 3;
