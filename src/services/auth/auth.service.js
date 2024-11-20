@@ -88,6 +88,9 @@ export const authService = {
         if (!userExist) {
             throw new BadRequestError("Email is not exist, please register");
         }
+        if(!userExist.status){
+            throw new BadRequestError("Account is blocked");
+        }
         //kiểm tra password
         const isPasswordValid = bcrypt.compareSync(
             password,
@@ -113,24 +116,5 @@ export const authService = {
         const cookies = setUpCookies.createToken_Cookies(userExist.user_id);
         return cookies;
     },
-    findAll: async function (req) {
-        let { pageIndex, pageSize } = req.query;
-        pageSize = pageSize ? +pageSize : 3;
-        pageIndex = pageIndex ? +pageIndex : 1;
-        const offset = (pageIndex - 1) * pageSize;
-        let totalItems = await prisma.restaurants.count();
-        let totalPages = Math.ceil(totalItems / pageSize);
-        const results = await prisma.restaurants.findMany({
-            skip: offset,
-            take: pageSize,
-        });
-
-        return {
-            pageIndex,
-            pageSize,
-            totalItems,
-            totalPages,
-            results: results || [],
-        };
-    },
+   
 };

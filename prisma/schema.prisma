@@ -15,6 +15,7 @@ model User {
   googleId   String?  
   avatar     String?
   phone      String?
+  status    Boolean   @default(true)
     favoriteFood String[]
     role          Role     @default(USER) 
   orders     Order[]  @relation("UserOrders")
@@ -28,6 +29,8 @@ model Store{
   image String?
   address String
   socialMedia String[]
+  bankAccount String
+  bankName String
   phone String
   menuFoods MenuFood[] @relation("FoodStore")
   createdAt   DateTime @default(now())
