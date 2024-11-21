@@ -7,7 +7,7 @@ export const authController = {
             const result = await authService.login(req);
             const response = responseSuccess(
                 result,
-                `login user entity successfully`
+                `Đăng nhập thành công`
             );
             res.status(response.code).json(response);
         } catch (err) {
@@ -19,7 +19,7 @@ export const authController = {
             const result = await authService.register(req);
             const response = responseSuccess(
                 result,
-                `register user entity successfully`
+                `Đăng ký thành công`
             );
             res.status(response.code).json(response);
         } catch (err) {

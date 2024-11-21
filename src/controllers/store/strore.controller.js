@@ -7,7 +7,7 @@ export const storeController = {
             const result = await storeService.create(req);
             const response = responseSuccess(
                 result,
-                `Create entity successfully`
+                `Thêm cửa hàng thành công`
             );
             res.status(response.code).json(response);
         } catch (err) {
@@ -20,7 +20,7 @@ export const storeController = {
             const result = await storeService.findAll(req);
             const response = responseSuccess(
                 result,
-                `Get all entity successfully`
+                `Lấy tất cả cửa hàng thành công`
             );
             res.status(response.code).json(response);
         } catch (err) {
@@ -33,7 +33,7 @@ export const storeController = {
             const result = await storeService.findOne(req);
             const response = responseSuccess(
                 result,
-                `Get entity #${req.params.id} successfully`
+                `Lấy cửa hàng #${req.params.id} thành công`
             );
             res.status(response.code).json(response);
         } catch (err) {
@@ -46,7 +46,7 @@ export const storeController = {
             const result = await storeService.update(req);
             const response = responseSuccess(
                 result,
-                `Update entity #${req.params.id} successfully`
+                `Cập nhật cửa hàng #${req.params.id} thành công`
             );
             res.status(response.code).json(response);
         } catch (err) {
@@ -59,7 +59,7 @@ export const storeController = {
             const result = await storeService.remove(req);
             const response = responseSuccess(
                 result,
-                `Remove entity #${req.params.id} successfully`
+                `Xóa cửa hàng #${req.params.id} thành công`
             );
             res.status(response.code).json(response);
         } catch (err) {

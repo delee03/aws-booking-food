@@ -5,10 +5,11 @@ import {
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import cookie from "cookie";
 import prisma from "../../common/prisma/prisma.init.js";
-import setUpCookies from "../token/createToken.cookies.js";
 import { sendMail } from "../../common/mails/sendMail.nodemailer.js";
+
+import token from "../token/createToken.jwt.js";
+import tokenService from "../token/createToken.jwt.js";
 
 export const authService = {
     register: async (req) => {
@@ -99,22 +100,12 @@ export const authService = {
         if (!isPasswordValid) {
             throw new BadRequestError("Password is invalid");
         }
-        //tạo token
-        // const token = jwt.sign(
-        //     { userId: userExist.id },
-        //     process.env.JWT_SECRET,
-        //     { expiresIn: "1h" }
-        // );
+     
 
-        // const cookieOptions = {
-        //     httpOnly: true,
-        //     maxAge: 15 * 24 * 60 * 60 * 1000,
-        // };
-
-        // const setCookie = cookie.serialize("token", token, cookieOptions);
-
-        const cookies = setUpCookies.createToken_Cookies(userExist.user_id);
-        return cookies;
+        const accessToken = tokenService.createToken(userExist)
+        return {
+            accessToken
+        };
     },
    
 };
