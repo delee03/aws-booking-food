@@ -81,10 +81,10 @@ export const menuFoodService = {
     if(!food_id){
         throw new BadRequestError("Cần cung cấp food_id");
     }
-    let objectId =  ObjectId.createFromHexString(food_id);
+   // let objectId =  ObjectId.createFromHexString(food_id);
     const foodExist = await prisma.menuFood.findUnique({
         where: {
-            food_id: objectId,
+            food_id: food_id,
         },
     });
     if (!foodExist) {
@@ -100,11 +100,11 @@ export const menuFoodService = {
         throw new BadRequestError("Cần cung cấp food_id");
     }
   
-    let objectId =  ObjectId.createFromHexString(food_id);
+    //let objectId =  ObjectId.createFromHexString(food_id);
     
     const foodExist = await prisma.menuFood.findUnique({
         where: {
-            food_id: objectId,
+            food_id: food_id,
         },
     });
     if (!foodExist) {
@@ -112,7 +112,7 @@ export const menuFoodService = {
     }
     const updatedFood = await prisma.menuFood.update({
         where: {
-            food_id: objectId,
+            food_id: food_id,
         },
         data: {
             name: name,

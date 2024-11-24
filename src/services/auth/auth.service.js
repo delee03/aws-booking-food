@@ -55,6 +55,7 @@ export const authService = {
                 name: fullName,
                 phone: phone,
             },
+    
         });
 
         // gửi mail thông báo đăng kí thành công

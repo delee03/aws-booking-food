@@ -44,36 +44,42 @@ export const storeService = {
         const results = await prisma.store.findMany({
             skip: offset,
             take: pageSize,
+          
         });
     
         return {
-            pageIndex,
-            pageSize,
-            totalItems,
-            totalPages,
-            data: results || [],
-        };
-      },
+                    pageIndex,
+                    pageSize,
+                    totalItems,
+                    totalPages,
+                    data: results || [],
+                };
+            },
 
-    findOne: async function (req) {
-        const store_id = req.params.id;
-        console.log({storeId: store_id});
-        if(!store_id){
-            throw new BadRequestError("Store id is required");
-        }   
-        let objectId =  ObjectId.createFromHexString(store_id);
-        if (!ObjectId.isValid(store_id)) {
-            throw new BadRequestError("Invalid Store ID");
-          }
-        const storeExist = await prisma.store.findUnique({
-            where: {
-                store_id: objectId,
-            }
-        })
-        if(!storeExist){
-            throw new BadRequestError("Store is not exist");
-        }
-        return storeExist;
+            findOne: async function (req) {
+                const store_id = req.params.id;
+                console.log({storeId: store_id});
+                if(!store_id){
+                    throw new BadRequestError("Store id is required");
+                }   
+                const storeExist = await prisma.store.findUnique({
+                    where: {
+                        store_id: store_id,
+                    }
+                });
+                if(!storeExist){
+                    throw new BadRequestError("Store does not exist");
+                }
+                const dataStore = await prisma.store.findUnique({
+                    where: {
+                        store_id: store_id,
+                    },
+                    include: {
+                        menuFoods: true,
+                    },
+                });
+
+                return dataStore;
     },
 
     update: async function (req) {
