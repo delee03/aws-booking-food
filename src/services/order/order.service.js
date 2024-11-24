@@ -1,6 +1,105 @@
 import prisma from "../../common/prisma/prisma.init.js";
+import crypto from "crypto";
+import moment from "moment";
+import axios from "axios";
+import qs from "qs";
+import { ObjectId } from "mongodb";
 
 export const orderService = {
+    createVnpayPaymentUrl: async function (
+        order_id,
+        amount,
+        bankCode,
+        returnUrl
+    ) {
+        try {
+            // Kiểm tra `order_id` hợp lệ
+            if (!ObjectId.isValid(order_id)) {
+                throw new Error(`Invalid order_id: ${order_id}`);
+            }
+
+            const tmnCode = process.env.VNPAY_TMN_CODE;
+            const secretKey = process.env.VNPAY_HASH_SECRET;
+            const vnpUrl = process.env.VNPAY_URL;
+            const createDate = moment().format("YYYYMMDDHHmmss");
+            const ipAddr = "127.0.0.1";
+
+            let vnp_Params = {
+                vnp_Version: "2.1.0",
+                vnp_Command: "pay",
+                vnp_TmnCode: tmnCode,
+                vnp_Amount: amount * 100,
+                vnp_CurrCode: "VND",
+                vnp_TxnRef: order_id, // Sử dụng trực tiếp `order_id`
+                vnp_OrderInfo: `Thanh toan don hang ${order_id}`,
+                vnp_OrderType: "other",
+                vnp_Locale: "vn",
+                vnp_IpAddr: ipAddr,
+                vnp_CreateDate: createDate,
+                vnp_ReturnUrl: returnUrl,
+            };
+
+            if (bankCode) {
+                vnp_Params["vnp_BankCode"] = bankCode;
+            }
+
+            vnp_Params = Object.keys(vnp_Params)
+                .sort()
+                .reduce((acc, key) => {
+                    acc[key] = vnp_Params[key];
+                    return acc;
+                }, {});
+
+            const signData = qs.stringify(vnp_Params, { encode: false });
+            const hmac = crypto.createHmac("sha512", secretKey);
+            const secureHash = hmac
+                .update(Buffer.from(signData, "utf-8"))
+                .digest("hex");
+
+            vnp_Params["vnp_SecureHash"] = secureHash;
+
+            return `${vnpUrl}?${qs.stringify(vnp_Params, { encode: false })}`;
+        } catch (error) {
+            console.error("Error in createVnpayPaymentUrl:", error.message);
+            throw error;
+        }
+    },
+    handleVnpayReturn: async function (req, res, next) {
+        try {
+            const queryParams = req.query;
+
+            const order_id = queryParams.vnp_TxnRef;
+
+            // Kiểm tra nếu `order_id` không hợp lệ
+            if (!ObjectId.isValid(order_id)) {
+                return res
+                    .status(400)
+                    .json({ message: `Invalid order_id: ${order_id}` });
+            }
+
+            // Tìm đơn hàng trong database
+            const order = await prisma.order.findUnique({
+                where: { order_id }, // Sử dụng trực tiếp `order_id`
+            });
+            if (!order) {
+                return res
+                    .status(404)
+                    .json({ message: `Order not found with ID: ${order_id}` });
+            }
+
+            // Xử lý logic tiếp theo
+            const result = await orderService.handleVnpayReturn(queryParams);
+
+            if (result.success) {
+                return res.status(200).json({ message: result.message });
+            } else {
+                return res.status(400).json({ message: result.message });
+            }
+        } catch (error) {
+            console.error("Error in handleVnpayReturn:", error.message);
+            next(error);
+        }
+    },
     create: async function (req) {
         //Request mẫu:
 
@@ -124,9 +223,10 @@ export const orderService = {
         if (!order_id) {
             throw new BadRequestError("Cần cung cấp order_id");
         }
+        let objectId = ObjectId.createFromHexString(order_id);
         const orderExist = await prisma.order.findUnique({
             where: {
-                order_id: order_id,
+                order_id: objectId,
             },
             include: {
                 menuItems: true,

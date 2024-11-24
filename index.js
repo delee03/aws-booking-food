@@ -1,6 +1,7 @@
 import express from "express";
 import rootRouter from "./src/routers/root.router.js";
 import { handlerError } from "./src/common/helpers/handle.error.js";
+import { orderService } from "./src/services/order/order.service.js";
 
 const app = express();
 

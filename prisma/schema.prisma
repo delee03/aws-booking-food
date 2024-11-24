@@ -58,6 +58,7 @@ model Order {
   menuItems   OrderDetail[] @relation("OrderDetails")
   status      OrderStatus     @default(PENDING) //chua thanh toan
   totalPrice  Float
+  paymentMethod PaymentMethod @default(CASH) //mac dinh thanh toan bang tien mat
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 }
@@ -80,4 +81,13 @@ enum OrderStatus {
   PAID       // Đã thanh toán
   FAILED     // Thanh toán thất bại
   CANCELLED  // Đã hủy
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  MOMO
+  VNPAY
+  VISA
+  MASTER
 }

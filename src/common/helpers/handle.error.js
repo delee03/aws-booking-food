@@ -1,6 +1,7 @@
 import pkg from "jsonwebtoken";
 const { TokenExpiredError, JsonWebTokenError } = pkg;
 import { responseError } from "./handle.response.js";
+import { Prisma } from "@prisma/client";
 
 export const handlerError = (error, req, res, next) => {
     console.log(`Lỗi ở next error ${error}`);
@@ -9,6 +10,18 @@ export const handlerError = (error, req, res, next) => {
     }
     if (error instanceof TokenExpiredError) {
         error.code = 403;
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        // Xử lý lỗi Prisma
+        if (error.code === "P2023") {
+            return res
+                .status(400)
+                .json({ message: "Invalid relation ID or input data" });
+        }
+        // Các lỗi Prisma khác
+        return res
+            .status(500)
+            .json({ message: "Database error", code: err.code });
     }
 
     const resData = responseError(error.message, error.code, error.stack);
