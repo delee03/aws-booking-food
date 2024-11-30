@@ -24,13 +24,14 @@ export const orderService = {
             const createDate = moment().format("YYYYMMDDHHmmss");
             const ipAddr = "127.0.0.1";
 
+            // Không mã hóa tham số khi xây dựng vnp_Params
             let vnp_Params = {
                 vnp_Version: "2.1.0",
                 vnp_Command: "pay",
                 vnp_TmnCode: tmnCode,
                 vnp_Amount: amount * 100,
                 vnp_CurrCode: "VND",
-                vnp_TxnRef: order_id, // Sử dụng trực tiếp `order_id`
+                vnp_TxnRef: order_id,
                 vnp_OrderInfo: `Thanh toan don hang ${order_id}`,
                 vnp_OrderType: "other",
                 vnp_Locale: "vn",
@@ -39,10 +40,12 @@ export const orderService = {
                 vnp_ReturnUrl: returnUrl,
             };
 
+            // Nếu có bankCode
             if (bankCode) {
                 vnp_Params["vnp_BankCode"] = bankCode;
             }
 
+            // Sắp xếp tham số theo thứ tự bảng chữ cái
             vnp_Params = Object.keys(vnp_Params)
                 .sort()
                 .reduce((acc, key) => {
@@ -50,15 +53,23 @@ export const orderService = {
                     return acc;
                 }, {});
 
-            const signData = qs.stringify(vnp_Params, { encode: false });
+            // Tạo signData (không encode các tham số ở đây)
+            const signData = qs.stringify(vnp_Params); // Không encode tham số ở đây nữa
+            console.log("signData:", signData);
+
+            // Hash bằng HMAC SHA512
             const hmac = crypto.createHmac("sha512", secretKey);
             const secureHash = hmac
                 .update(Buffer.from(signData, "utf-8"))
                 .digest("hex");
 
+            console.log("secureHash:", secureHash);
+
+            // Thêm secureHash vào tham số
             vnp_Params["vnp_SecureHash"] = secureHash;
 
-            return `${vnpUrl}?${qs.stringify(vnp_Params, { encode: false })}`;
+            // Tạo URL cuối cùng
+            return `${vnpUrl}?${qs.stringify(vnp_Params)}`;
         } catch (error) {
             console.error("Error in createVnpayPaymentUrl:", error.message);
             throw error;

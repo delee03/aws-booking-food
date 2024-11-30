@@ -68,7 +68,7 @@ export const orderController = {
     },
     createPaymentUrl: async function (req, res, next) {
         try {
-            const { order_id, amount = 100000, bankCode = "NCB" } = req.body;
+            const { order_id, amount = 100000, bankCode } = req.body;
 
             if (!order_id || !amount) {
                 return res
@@ -76,9 +76,7 @@ export const orderController = {
                     .json({ message: "Order ID and amount are required" });
             }
 
-            const returnUrl =
-                `${process.env.CLIENT_URL}/vnpay_return` ||
-                `http://localhost:3000/vnpay_return`;
+            const returnUrl = `http://localhost:5173`;
             const paymentUrl = await orderService.createVnpayPaymentUrl(
                 order_id,
                 amount,
